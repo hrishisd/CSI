@@ -1,2 +1,4 @@
 # ignore clang output
 **/*out 
+# ignore vscode files
+**/*.vscode
