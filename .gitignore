@@ -2,3 +2,7 @@
 **/*out 
 # ignore vscode files
 **/*.vscode
+# ignore generated object files
+**/*.o
+# ignore generated assembly files
+**/*.s
