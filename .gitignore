@@ -6,3 +6,5 @@
 **/*.o
 # ignore generated assembly files
 **/*.s
+# ignore cachegrind output
+**/*cachegrind.out*
