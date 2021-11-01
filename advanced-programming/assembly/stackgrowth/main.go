@@ -1,0 +1,13 @@
+package main
+
+func main() {
+	go fib(100)
+	fib(100)
+}
+
+func fib(n int) int {
+	if n < 2 {
+		return n
+	}
+	return fib(n-2) + fib(n-1)
+}
