@@ -14,7 +14,8 @@ func TestServices(t *testing.T) {
 		max := uint64(0)
 		mutex := sync.Mutex{}
 		concurrency := 1000
-		done := make(chan int, concurrency)
+		wg := sync.WaitGroup{}
+		wg.Add(concurrency)
 		getId := func() {
 			id := service.getNext()
 			mutex.Lock()
@@ -22,14 +23,12 @@ func TestServices(t *testing.T) {
 				max = id
 			}
 			mutex.Unlock()
-			done <- 1
+			wg.Done()
 		}
 		for i := 0; i < concurrency; i++ {
 			go getId()
 		}
-		for i := 0; i < concurrency; i++ {
-			<-done
-		}
+		wg.Wait()
 		got := max
 		want := concurrency
 		if got != uint64(want) {
@@ -42,7 +41,7 @@ func BenchmarkService(b *testing.B) {
 	services := []idService{
 		&noSyncService{}, &atomicService{}, &mutexIdService{}, makeThreadedIdService(),
 	}
-	concurrency := 1_000_000
+	concurrency := 500_000
 	for _, s := range services {
 		b.Run(fmt.Sprintf("%T", s), func(b *testing.B) {
 			wg := sync.WaitGroup{}
@@ -55,6 +54,7 @@ func BenchmarkService(b *testing.B) {
 			for i := 0; i < concurrency; i++ {
 				go callService()
 			}
+			wg.Wait()
 		})
 	}
 }

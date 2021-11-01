@@ -27,9 +27,9 @@ func (d *dbService) logState() {
 
 func (d *dbService) takeSnapshot() {
 	d.lock.RLock()
-	defer d.lock.RUnlock()
 
 	fmt.Printf("Taking snapshot over connection %q\n", d.connection)
+	d.lock.RUnlock()
 
 	// Simulate slow operation
 	time.Sleep(time.Second)

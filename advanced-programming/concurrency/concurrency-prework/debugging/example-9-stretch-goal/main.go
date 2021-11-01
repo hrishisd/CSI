@@ -14,7 +14,8 @@ func main() {
 		defer wg.Done()
 
 		c := s.GetConsumer(0)
-		c.Terminate()
+		s.TerminateConsumer(c)
+		// c.Terminate()
 	}()
 
 	wg.Add(1)

@@ -28,10 +28,11 @@ func (s *StateManager) AddConsumer(c *Consumer) {
 	s.consumers[c.id] = c
 }
 
-func (s *StateManager) RemoveConsumer(id int) {
+func (s *StateManager) TerminateConsumer(c *Consumer) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-
+	id := c.id
+	c.Terminate()
 	delete(s.consumers, id)
 }
 

@@ -16,7 +16,7 @@ func randomDelay(maxMillis int) time.Duration {
 	return time.Duration(rand.Intn(maxMillis)) * time.Millisecond
 }
 
-func query(endpoint string) string {
+func query(_ string) string {
 	// Simulate querying the given endpoint
 	delay := randomDelay(100)
 	time.Sleep(delay)
@@ -29,7 +29,7 @@ func query(endpoint string) string {
 // response (this approach increases the amount of traffic but
 // significantly improves "tail latency")
 func parallelQuery(endpoints []string) string {
-	results := make(chan string)
+	results := make(chan string, len(endpoints))
 	for i := range endpoints {
 		go func(i int) {
 			results <- query(endpoints[i])
