@@ -8,3 +8,4 @@
 **/*.s
 # ignore cachegrind output
 **/*cachegrind.out*
+**/.DS*
