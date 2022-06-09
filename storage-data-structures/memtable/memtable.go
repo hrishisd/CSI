@@ -1,9 +1,14 @@
 package memtable
 
-import "bytes"
+import (
+	"bytes"
+	"encoding/binary"
+	"io"
+)
 
 type Memtable struct {
 	list SkipList
+	size int
 }
 
 func EmptyMemtable() Memtable {
@@ -19,8 +24,14 @@ func (m *Memtable) Has(key []byte) bool {
 	return err == nil
 }
 
-func (m *Memtable) Put(key, value []byte) {
-	m.list.Insert(key, value)
+func (m *Memtable) Put(key, value []byte) error {
+	prevVal := m.list.Insert(key, value)
+	if prevVal == nil {
+		m.size += len(key) + len(value)
+	} else {
+		m.size += len(value) - len(prevVal)
+	}
+	return nil
 }
 
 func (m *Memtable) Delete(key []byte) {
@@ -31,6 +42,37 @@ func (m *Memtable) Delete(key []byte) {
 // // key-value pairs in the given range, ordered by key ascending.
 func (m *Memtable) RangeScan(start, limit []byte) Iterator {
 	return &MemtableIter{curr: m.list.SearchNode(start), limit: limit}
+}
+
+// flat sequence of (key length, value length, key, value)
+// key length and value length are uint16 each
+func (m *Memtable) flushSSTable(w io.Writer) error {
+	node := m.list.header.forward[0]
+	sizeBuf := make([]byte, 2)
+	for node != nil {
+		keyLen := uint16(len(node.key))
+		binary.BigEndian.PutUint16(sizeBuf, keyLen)
+		_, err := w.Write(sizeBuf)
+		if err != nil {
+			return err
+		}
+		valLen := uint16(len(node.value))
+		binary.BigEndian.PutUint16(sizeBuf, valLen)
+		_, err = w.Write(sizeBuf)
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(node.key)
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(node.value)
+		if err != nil {
+			return err
+		}
+		node = node.forward[0]
+	}
+	return nil
 }
 
 type MemtableIter struct {

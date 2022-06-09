@@ -44,7 +44,8 @@ func (s SkipList) Search(key []byte) ([]byte, error) {
 	}
 }
 
-func (s *SkipList) Insert(key []byte, value []byte) {
+/// Returns prev value if key already exists
+func (s *SkipList) Insert(key []byte, value []byte) []byte {
 	path := [numLevels]*node{}
 	x := s.header
 	for i := s.level; i >= 0; i-- {
@@ -56,7 +57,9 @@ func (s *SkipList) Insert(key []byte, value []byte) {
 	// Now, x.key < key <= x.forward[0].key
 	x = x.forward[0]
 	if x != nil && bytes.Equal(x.key, key) {
+		oldVal := x.value
 		x.value = value
+		return oldVal
 	} else {
 		level := randomLevel()
 		if level > s.level {
@@ -70,6 +73,7 @@ func (s *SkipList) Insert(key []byte, value []byte) {
 			newNode.forward[i] = path[i].forward[i]
 			path[i].forward[i] = &newNode
 		}
+		return nil
 	}
 }
 
